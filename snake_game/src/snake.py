@@ -1,7 +1,9 @@
 import pygame
 
 class Snake:
-    def __init__(self, color=(0, 255, 0), start_pos=(400, 300), block_size= 10, start_speed = 1):
+    
+
+    def __init__(self, color=(0, 255, 0), start_pos=(400, 300), block_size= 14, start_speed = 1):
         self.color = color
         self.block_size = block_size
         self.body = [start_pos]
@@ -18,9 +20,9 @@ class Snake:
             return
 
         head_x, head_y = self.body[0]
-        new_head = (head_x + self.direction[0] * self.speed / 5, head_y + self.direction[1] * self.speed / 5)
+        new_head = (head_x + self.direction[0] * self.speed / 4, head_y + self.direction[1] * self.speed / 4)
         self.body.insert(0, new_head)
-        self.speed += 0.0005
+        self.speed += 0.00005
         if self.growth > 0:
             self.growth -= 1
         else:
@@ -29,22 +31,13 @@ class Snake:
     def grow(self, growth=1):
         self.growth += growth
 
-    def speed_up(self):
+    def speed_up(self, speed_rate = 1.2):
         # Increase the snake's speed by a factor of choice
-        self.speed *= 1.2
+        self.speed *= speed_rate
 
-    def slow_down(self, slow_rate = 0.9):
+    def slow_down(self, slow_rate = 0.5):
         # Decrease the snake's speed by a factor of choice
         self.speed *= slow_rate
-
-    def check_collision(self, position):
-        for segment in self.body:
-            if position == segment:
-                return True
-        return False
-
-    def check_self_collision(self):
-        return self.body[0] in self.body[1:]
 
     def draw(self, screen):
         for i, segment in enumerate(self.body):

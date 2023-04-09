@@ -1,32 +1,51 @@
+import pygame
+import os
+import json
+
+
 class Highscore:
-    def __init__(self, file_name="personal_records.txt"):
-        self.file_name = file_name
-        self.records = self.load_personal_records()
+    def __init__(self, filename='snake_game/records/highscores.json'):
+        self.filename = filename
 
-    def load_personal_records(self):
-        try:
-            with open(self.file_name, "r") as file:
-                records = [int(line.strip()) for line in file.readlines()]
-        except FileNotFoundError:
-            records = []
+        if not os.path.exists(self.filename):
+            with open(self.filename, 'w') as file:
+                json.dump([], file)
 
-        return sorted(records, reverse=True)
+    def add_score(self, score):
+        scores = self.get_scores()
+        scores.append(score)
+        scores.sort(reverse=True)
+        scores = scores[:10]  # Keep only the top 10 scores
 
-    def save_personal_records(self):
-        with open(self.file_name, "w") as file:
-            for record in self.records:
-                file.write(f"{record}\n")
+        with open(self.filename, 'w') as file:
+            json.dump(scores, file)
 
-    def add_record(self, new_record):
-        self.records.append(new_record)
-        self.records.sort(reverse=True)
+    def get_scores(self):
+        with open(self.filename, 'r') as file:
+            scores = json.load(file)
+        return scores
 
-        # Keep only the top 10 records
-        if len(self.records) > 10:
-            self.records.pop()
+    def show_personal_records(self, screen):
+        scores = self.get_scores()
+        font = pygame.font.Font(None, 36)
+        running = True
 
-        self.save_personal_records()
+        while running:
+            screen.fill((0, 0, 0))
 
-    def get_personal_records(self):
-        return self.records
+            for i, score in enumerate(scores):
+                text = font.render(f"{i + 1}. {score}", True, (255, 255, 255))
+                text_rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 160 + i * 40))
+                screen.blit(text, text_rect)
+
+            pygame.display.flip()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+                elif event.type == pygame.KEYDOWN:
+                    if event.key in (pygame.K_ESCAPE, pygame.K_RETURN, pygame.K_SPACE, pygame.K_q):
+                        running = False
+
 
