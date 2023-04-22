@@ -115,7 +115,7 @@ def draw_color_selection(screen, color_options, title_font, font):
         color_rect = pygame.Rect(config.COLOR_OPTION_X, config.COLOR_OPTION_Y + (config.OPTION_SPACING * i), config.COLOR_SIZE, config.COLOR_SIZE)
         pygame.draw.rect(screen, color, color_rect)
 
-        option_text = font.render(f"{i}. {color}", True, config.WHITE)
+        option_text = font.render(f"{i}. {config.COLOR_NAMES[i-1]}", True, config.WHITE)
         option_rect = option_text.get_rect(left=color_rect.right + config.CLR_TEXT_DIST, centery=color_rect.centery)
         screen.blit(option_text, option_rect)
 

@@ -42,6 +42,15 @@ COLOR_OPTIONS = [
     PURPLE,
     ORANGE
 ]
+COLOR_NAMES = [
+    "GREEN",
+    "RED",
+    "BLUE",
+    "PINK",
+    "YELLOW",
+    "PURPLE",
+    "ORANGE"
+]
 
 #GAME
 PANEL_HEIGHT = 30
