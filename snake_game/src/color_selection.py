@@ -1,6 +1,6 @@
 import pygame
-from drawing import draw_color_selection
-import config
+from .drawing import draw_color_selection
+from . import config
 
 class ColorSelection:
     def __init__(self, screen):

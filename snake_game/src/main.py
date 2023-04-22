@@ -8,7 +8,7 @@ from src.highscore import Highscore
 from src.level_selection import LevelSelection
 from src.color_selection import ColorSelection
 from src.menu import Menu
-import config
+from . import config
 
 
 def main():

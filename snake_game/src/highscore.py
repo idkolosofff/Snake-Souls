@@ -1,8 +1,8 @@
 import pygame
 import os
 import json
-from drawing import draw_highscore
-import config
+from .drawing import draw_highscore
+from . import config
 
 class Highscore:
     def __init__(self, filename='snake_game/records/highscores.json'):

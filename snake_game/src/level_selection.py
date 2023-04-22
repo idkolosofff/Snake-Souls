@@ -1,6 +1,6 @@
 import pygame
-from drawing import draw_level_selection
-import config
+from .drawing import draw_level_selection
+from . import config
 
 class LevelSelection:
     def __init__(self, screen):

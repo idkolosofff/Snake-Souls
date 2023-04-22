@@ -1,7 +1,7 @@
 import pygame
 import random
-from drawing import draw_snake
-import config
+from .drawing import draw_snake
+from . import config
 
 class Snake:
     def __init__(self, color = config.GREEN, start_pos = config.START_POS, block_size = config.SNAKE_SIZE, start_speed = config.START_SPEED):

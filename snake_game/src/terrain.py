@@ -1,6 +1,6 @@
 import pygame
-from drawing import draw_terrain
-import config
+from .drawing import draw_terrain
+from . import config
 
 class Terrain:
     def __init__(self, position, terrain_type = "add_points"):

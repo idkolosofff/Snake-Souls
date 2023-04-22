@@ -1,6 +1,6 @@
 import pygame
-from drawing import draw_food
-import config
+from .drawing import draw_food
+from . import config
 
 class Food:
     size = config.FOOD_SIZE

@@ -1,6 +1,6 @@
 import pygame
-from drawing import draw_bonus
-import config
+from .drawing import draw_bonus
+from . import config
 
 class Bonus:
     def __init__(self, position, bonus_type = "add_points"):

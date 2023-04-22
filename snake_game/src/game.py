@@ -8,8 +8,8 @@ from .bonus import Bonus
 from .terrain import Terrain
 from .highscore import Highscore
 from .food import Food
-from drawing import draw_game
-import config
+from .drawing import draw_game
+from . import config
 
 
 class Game:

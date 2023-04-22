@@ -1,6 +1,6 @@
 import pygame
-from drawing import draw_menu
-import config
+from .drawing import draw_menu
+from . import config
 
 class Menu:
     def __init__(self, screen):

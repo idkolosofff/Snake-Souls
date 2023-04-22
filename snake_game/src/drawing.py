@@ -1,5 +1,5 @@
 import pygame
-import config
+from . import config
 
 def draw_menu(screen, options, title_font, caption_font, font):
     screen.fill(config.BLACK)
