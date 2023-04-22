@@ -1,7 +1,8 @@
 import pygame
 import os
 import json
-
+from drawing import draw_highscore
+import config
 
 class Highscore:
     def __init__(self, filename='snake_game/records/highscores.json'):
@@ -15,7 +16,7 @@ class Highscore:
         scores = self.get_scores()
         scores.append(score)
         scores.sort(reverse=True)
-        scores = scores[:10]  # Keep only the top 10 scores
+        scores = scores[:config.TOP_SELECTION]  # Keep only the top 10 scores
 
         with open(self.filename, 'w') as file:
             json.dump(scores, file)
@@ -27,18 +28,11 @@ class Highscore:
 
     def show_personal_records(self, screen):
         scores = self.get_scores()
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.Font(None, config.SCORE_FONT)
         running = True
 
         while running:
-            screen.fill((0, 0, 0))
-
-            for i, score in enumerate(scores):
-                text = font.render(f"{i + 1}. {score}", True, (255, 255, 255))
-                text_rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2 - 160 + i * 40))
-                screen.blit(text, text_rect)
-
-            pygame.display.flip()
+            draw_highscore(screen, scores, font)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

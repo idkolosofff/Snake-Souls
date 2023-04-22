@@ -1,15 +1,16 @@
 import pygame
+import random
+from drawing import draw_snake
+import config
 
 class Snake:
-    
-
-    def __init__(self, color=(0, 255, 0), start_pos=(400, 300), block_size= 14, start_speed = 1):
+    def __init__(self, color = config.GREEN, start_pos = config.START_POS, block_size = config.SNAKE_SIZE, start_speed = config.START_SPEED):
         self.color = color
         self.block_size = block_size
         self.body = [start_pos]
-        self.direction = (1, 0)
+        self.direction = config.LEFT
         self.speed = start_speed
-        self.growth = 0
+        self.growth = 0             #How many tail blocks to grow
 
     def change_direction(self, new_direction):
         if self.direction[0] * new_direction[0] + self.direction[1] * new_direction[1] == 0:
@@ -20,9 +21,9 @@ class Snake:
             return
 
         head_x, head_y = self.body[0]
-        new_head = (head_x + self.direction[0] * self.speed / 4, head_y + self.direction[1] * self.speed / 4)
+        new_head = (head_x + self.direction[0] * self.speed / config.HEAD_SPEED_PARAMETER, head_y + self.direction[1] * self.speed / config.HEAD_SPEED_PARAMETER)
         self.body.insert(0, new_head)
-        self.speed += 0.00005
+        self.speed += config.PASSIVE_SPEED_INCREMENT
         if self.growth > 0:
             self.growth -= 1
         else:
@@ -31,24 +32,22 @@ class Snake:
     def grow(self, growth=1):
         self.growth += growth
 
-    def speed_up(self, speed_rate = 1.2):
+    def speed_up(self, speed_rate = config.DEFAULT_SPEED_FACTOR):
         # Increase the snake's speed by a factor of choice
         self.speed *= speed_rate
 
-    def slow_down(self, slow_rate = 0.5):
+    def slow_down(self, slow_rate = config.DEFAULT_SLOW_FACTOR):
         # Decrease the snake's speed by a factor of choice
         self.speed *= slow_rate
 
-    def draw(self, screen):
-        for i, segment in enumerate(self.body):
-            segment_rect = pygame.Rect(segment[0] - self.block_size // 2, segment[1] - self.block_size // 2, self.block_size, self.block_size)
-            if i == 0:  # Head
-                pygame.draw.rect(screen, self.color, segment_rect, border_radius=1)
-            else:  # Body
-                pygame.draw.rect(screen, self.color, segment_rect)
+    def trip(self):
+        self.color = config.COLOR_OPTIONS[random.randint(0, 6)]
 
-    def reset(self, start_pos=(400, 300)):
+    def draw(self, screen):
+        draw_snake(screen, self.body, self.block_size, self.color)
+
+    def reset(self, start_pos = config.START_POS):
         self.body = [start_pos]
-        self.direction = (1, 0)
+        self.direction = config.LEFT
         self.growth = 0
 

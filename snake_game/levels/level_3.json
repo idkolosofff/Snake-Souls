@@ -23,6 +23,14 @@
       "type": "wall"
     },
     {
+      "position": [400, 300],
+      "type": "mushroom"
+    },
+    {
+      "position": [50, 50],
+      "type": "holy_grail"
+    },
+    {
       "position": [600, 500],
       "type": "wall"
     },

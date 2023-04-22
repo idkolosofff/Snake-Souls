@@ -8,24 +8,29 @@ from .bonus import Bonus
 from .terrain import Terrain
 from .highscore import Highscore
 from .food import Food
+from drawing import draw_game
+import config
 
 
 class Game:
-    def __init__(self, screen, highscore, level):
+    def __init__(self, screen, highscore, level, snake_color):
         self.screen = screen
         self.highscore = highscore
         self.running = True
         self.game_over = False
         self.width, self.height = screen.get_size()
-        self.panel_height = 30
+        self.panel_height = config.PANEL_HEIGHT
         self.clock = pygame.time.Clock()
         self.foods = []
-        self.snake = Snake()
+        self.snake_color = snake_color
+        self.snake = Snake(color=snake_color)
         self.level_number = level
         self.points = 0
         self.start_time = pygame.time.get_ticks()
         self.bonus_spawn_timer = 0
-        self.bonus_spawn_interval = 20000  # Time in milliseconds between bonus spawns
+        self.grail_spawn_timer = 0
+        self.shroom_spawn_timer = 0
+        self.bonus_spawn_interval = config.BONUS_SPAWN_INTERVAL  # Time in milliseconds between bonus spawns
         self.load_level(self.level_number)
 
     def load_level(self, level_number):
@@ -35,7 +40,7 @@ class Game:
 
         # Load snake
         snake_data = level_data["snake"]
-        self.snake = Snake(start_pos = snake_data["initial_position"], start_speed = snake_data["initial_speed"])
+        self.snake = Snake(start_pos = snake_data["initial_position"], start_speed = snake_data["initial_speed"], color= self.snake_color)
 
         # Load points to complete and possible bonus types
         self.points_to_complete = level_data["points_to_complete"]
@@ -53,8 +58,8 @@ class Game:
 
     def spawn_food(self):
         while True:
-            x = random.randint(20, self.width - 30)
-            y = random.randint(20, self.height - 50)
+            x = random.randint(config.SCREEN_EDGE_SIZE, self.width - config.SCREEN_EDGE_SIZE)
+            y = random.randint(config.SCREEN_EDGE_SIZE, self.height - config.SCREEN_EDGE_SIZE - self.panel_height)
             food_position = (x, y)
 
             if not (self.check_collision(food_position, Food.size) or self.check_collision_with_terrain(food_position, Food.size)):
@@ -65,17 +70,69 @@ class Game:
 
     def spawn_bonus(self):
         while True:
-            x = random.randint(20, self.width - 30)
-            y = random.randint(20, self.height - 50)
+            x = random.randint(config.SCREEN_EDGE_SIZE, self.width - config.SCREEN_EDGE_SIZE)
+            y = random.randint(config.SCREEN_EDGE_SIZE, self.height - config.SCREEN_EDGE_SIZE - self.panel_height)
             bonus_position = (x, y)
             bonus_type = random.choice(self.possible_bonus_types)
-            bonus_size = Bonus.bonus_sizes[bonus_type]
+            bonus_size = config.BONUS_SIZES[bonus_type]
 
             if not (self.check_collision(bonus_position, bonus_size) or self.check_collision_with_terrain(bonus_position, bonus_size)):
                 break
 
         bonus = Bonus(bonus_position, bonus_type)
         self.bonuses.append(bonus)
+
+    def grow_mushroom(self):
+        # Find all mushroom terrain
+        mushroom_size = config.TERRAIN_SIZES["mushroom"]
+        mushroom_terrains = [terrain for terrain in self.terrains if terrain.type == "mushroom"]
+
+        # If no mushroom terrain, do nothing
+        if not mushroom_terrains:
+            return
+
+        # Choose a random mushroom terrain
+        mushroom = random.choice(mushroom_terrains)
+
+        # Calculate adjacent positions
+        adjacent_positions = [
+            (mushroom.position[0] + mushroom_size, mushroom.position[1]),
+            (mushroom.position[0] - mushroom_size, mushroom.position[1]),
+            (mushroom.position[0], mushroom.position[1] + mushroom_size),
+            (mushroom.position[0], mushroom.position[1] - mushroom_size),
+        ]
+
+        # Filter out positions outside the screen
+        adjacent_positions = [
+            pos for pos in adjacent_positions
+            if (0 <= pos[0] <= self.width) and (0 <= pos[1] <= self.height - self.panel_height)
+            and not self.is_position_occupied_by_mushroom(pos)
+        ]
+
+        # Choose a random adjacent position
+        if not adjacent_positions:
+            return
+        new_mushroom_position = random.choice(adjacent_positions)
+
+        # Check if the new position collides with existing terrain
+        if not self.check_collision_with_terrain(new_mushroom_position, mushroom_size):
+            # Create a new mushroom terrain at the chosen position
+            new_mushroom = Terrain(new_mushroom_position, "mushroom")
+            self.terrains.append(new_mushroom)
+
+    def move_grail(self):
+        x = random.randint(config.SCREEN_EDGE_SIZE, self.width - config.SCREEN_EDGE_SIZE)
+        y = random.randint(config.SCREEN_EDGE_SIZE, self.height - config.SCREEN_EDGE_SIZE - self.panel_height)
+        grail_position = (x, y)
+        for terrain in self.terrains:
+            if terrain.type == "holy_grail":
+                terrain.position = grail_position
+
+    def is_position_occupied_by_mushroom(self, position):
+        for terrain in self.terrains:
+            if terrain.type == "mushroom" and terrain.position == position:
+                return True
+        return False
 
     def check_collision(self, obj_position, obj_size, increment = 0):
         obj_rect = pygame.Rect(obj_position[0] - obj_size // 2, obj_position[1] - obj_size // 2, obj_size, obj_size)
@@ -101,14 +158,14 @@ class Game:
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == K_UP and self.snake.direction != (0, 1):
-                    self.snake.direction = (0, -1)
-                elif event.key == K_DOWN and self.snake.direction != (0, -1):
-                    self.snake.direction = (0, 1)
-                elif event.key == K_LEFT and self.snake.direction != (1, 0):
-                    self.snake.direction = (-1, 0)
-                elif event.key == K_RIGHT and self.snake.direction != (-1, 0):
-                    self.snake.direction = (1, 0)
+                if event.key == K_UP and self.snake.direction != config.UP:
+                    self.snake.direction = config.DOWN
+                elif event.key == K_DOWN and self.snake.direction != config.DOWN:
+                    self.snake.direction = config.UP
+                elif event.key == K_LEFT and self.snake.direction != config.LEFT:
+                    self.snake.direction = config.RIGHT
+                elif event.key == K_RIGHT and self.snake.direction != config.RIGHT:
+                    self.snake.direction = config.LEFT
                 elif event.key == K_ESCAPE:
                     self.game_over = True
 
@@ -133,33 +190,33 @@ class Game:
         self.foods = []
         self.bonuses = []
         self.snake.body = []
-        self.highscore.add_score(self.points)
-        self.screen.fill((0, 0, 0))
+        self.highscore.add_score(int(self.points))
+        self.screen.fill(config.BLACK)
 
         self.show_game_over()
 
-        self.screen.fill((0, 0, 0))
+        self.screen.fill(config.BLACK)
         self.running = False
     
     def show_game_over(self):
-        self.screen.fill((0, 0, 0))
+        self.screen.fill(config.BLACK)
 
-        font = pygame.font.Font(None, 36)
-        text = font.render("Game Over", True, (255, 255, 255))
+        font = pygame.font.Font(None, config.MENU_FONT)
+        text = font.render("Game Over", True, config.WHITE)
         text_rect = text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2))
         self.screen.blit(text, text_rect)
 
         pygame.display.flip()
-        pygame.time.delay(1000)  # Show the "Game Over" text for 2 seconds
+        pygame.time.delay(config.GAME_OVER_DELAY)  # Show the "Game Over" text for 2 seconds
 
     def update(self):
         self.snake.update()
 
-        self.game_over = self.check_collision(self.snake.body[0], self.snake.block_size, int(200 // self.snake.speed)) #Check if Head collides with the tail
+        self.game_over = self.check_collision(self.snake.body[0], self.snake.block_size, int(config.SNAKE_INCREMENT // self.snake.speed)) #Check if Head collides with the tail
 
         for food in self.foods:
             if self.check_collision(food.position, food.size):
-                self.snake.grow(10)
+                self.snake.grow(config.SNAKE_GROWTH_RATE)
                 self.points += 1
                 self.foods.remove(food)
                 self.spawn_food()
@@ -177,68 +234,47 @@ class Game:
                 self.bonuses.remove(bonus)
                 break
 
+        if current_time - self.grail_spawn_timer > config.GRAIL_CHANGE_TIME:
+            self.move_grail()
+            self.grail_spawn_timer = current_time
+        
+        if current_time - self.shroom_spawn_timer > config.MUSHROOM_GROW_TIME:
+            self.grow_mushroom()
+            self.shroom_spawn_timer = current_time
+
         # Check if the snake is on a terrain tile and apply the terrain effect
         for terrain in self.terrains:
             if self.check_collision(terrain.position, terrain.size):
                 if terrain.type == "slow_down":
-                    self.snake.slow_down(0.999)
-                elif terrain.type == "speed_up":
-                    self.snake.speed_up(1.001)
-                elif terrain.type == "wall":
+                    self.snake.slow_down(config.TERRAIN_SLOW_RATE)
+                
+                if terrain.type == "speed_up":
+                    self.snake.speed_up(config.TERRAIN_SPEEDUP_RATE)
+                
+                if terrain.type == "wall":
                     self.game_over = True
-                break
+                
+                if terrain.type == "mushroom":
+                    self.snake.trip()
+                
+                if terrain.type == "holy_grail":
+                    self.points += config.HOLY_GRAIL_ADD
 
         self.game_over_check()
         if self.game_over:
             self.handle_game_over()
-        pygame.time.delay(5)
+        pygame.time.delay(config.UPDATE_DELAY)
 
     def apply_bonus_effect(self, bonus):
         if bonus.type == "speed_up":
             self.snake.speed_up()
         elif bonus.type == "add_points":
-            self.points += 5
+            self.points += config.BONUS_POINTS
         elif bonus.type == "slow_down":
             self.snake.slow_down()
     
-    def draw_panel(self):
-        panel_y = self.height - self.panel_height
-        panel_bg_color = (50, 50, 50)
-        border_color = (255, 255, 255)
-        border_thickness = 2
-
-        # Draw the panel background
-        pygame.draw.rect(self.screen, panel_bg_color, (0, panel_y, self.width, self.panel_height))
-        pygame.draw.line(self.screen, border_color, (0, panel_y), (self.width, panel_y), border_thickness)
-
-        # Set the font and color for the text
-        font = pygame.font.Font(None, 20)
-        text_color = (255, 255, 255)
-
-        # Display the current points, length, speed, and time passed
-        points_text = font.render(f"Points: {self.points}/{self.points_to_complete}", True, text_color)
-        length_text = font.render(f"Length: {len(self.snake.body) // 10}", True, text_color)
-        speed_text = font.render(f"Speed: {self.snake.speed:.2f}", True, text_color)
-        time_passed = (pygame.time.get_ticks() - self.start_time) // 1000
-        time_text = font.render(f"Time: {time_passed}s", True, text_color)
-
-        # Position the text elements on the panel
-        self.screen.blit(points_text, (10, panel_y + self.panel_height // 2 - points_text.get_height() // 2))
-        self.screen.blit(length_text, (150, panel_y + self.panel_height // 2 - length_text.get_height() // 2))
-        self.screen.blit(speed_text, (290, panel_y + self.panel_height // 2 - speed_text.get_height() // 2))
-        self.screen.blit(time_text, (430, panel_y + self.panel_height // 2 - time_text.get_height() // 2))
-
     def draw(self):
-        self.screen.fill((0, 0, 0))  # Clear screen
-        for terrain in self.terrains:
-            terrain.draw(self.screen)
-        self.snake.draw(self.screen)
-        for food in self.foods:
-            food.draw(self.screen)
-        for bonus in self.bonuses:
-            bonus.draw(self.screen)
-        self.draw_panel()
-        # Draw other game elements (e.g., score, lives)
+        draw_game(self.screen, self.terrains, self.snake, self.foods, self.bonuses, self.panel_height, self.points, self.points_to_complete, self.start_time)
 
     def run(self):
         while self.running:
@@ -246,5 +282,5 @@ class Game:
             self.update()
             self.draw()
             pygame.display.flip()
-            self.clock.tick(120)
+            self.clock.tick(config.CLOCK_TICK)
 

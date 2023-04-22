@@ -7,6 +7,7 @@
   "points_to_complete": 150,
   "terrains": [
     { "position": [200, 400], "type": "slow_down" },
+    { "position": [10, 100], "type": "holy_grail" },
     { "position": [600, 400], "type": "slow_down" },
     { "position": [400, 150], "type": "speed_up" },
     { "position": [100, 100], "type": "wall" },

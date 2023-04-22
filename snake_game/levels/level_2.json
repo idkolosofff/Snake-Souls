@@ -39,6 +39,14 @@
       "type": "slow_down"
     },
     {
+      "position": [630, 300],
+      "type": "holy_grail"
+    },
+    {
+      "position": [630, 300],
+      "type": "mushroom"
+    },
+    {
       "position": [630, 530],
       "type": "speed_up"
     },
