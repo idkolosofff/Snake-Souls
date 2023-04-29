@@ -3,7 +3,7 @@ SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 800
 
 #MENU
-MENU_OPTIONS = [("1", "Start New Game"), ("2", "Show Personal Records"), ("3", "Colors"), ("4", "Quit")]
+MENU_OPTIONS = [("1", "Start New Game"), ("2", "Multiplayer"), ("3", "Show Personal Records"), ("4", "Colors"), ("5", "Quit")]
 TITLE_FONT = 48
 MENU_FONT = 36
 
@@ -137,3 +137,9 @@ SCORES_LINES_GAP = 40
 SCORES_TEXT_HEIGHT = 160
 TOP_SELECTION = 10
 SCORE_FONT = 36
+
+MULTIPLAYER_OPTIONS = [
+    "Host Game",
+    "Join Game",
+    "Back",
+]
