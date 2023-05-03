@@ -10,3 +10,9 @@ class Bonus:
 
     def draw(self, screen):
         draw_bonus(screen, self.position, self.size, self.type)
+
+    def get_bonus_data(self):
+        return {
+            'type' : self.type,
+            'position': self.position,
+        }

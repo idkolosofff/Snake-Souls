@@ -1,58 +1,56 @@
 from .snake import Snake
 from .bonus import Bonus
 from .terrain import Terrain
-from .highscore import Highscore
 from .food import Food
-from .drawing import draw_game
+from .drawing import draw_game_multiplayer
+from .drawing import show_end_screen
 from . import config
 import pygame
 from .game import Game
-from .network import encode_player_input, decode_game_state
+from .client import Client
+from . import drawing
 
 class GameMultiplayer:
-    def __init__(self, screen, highscore, level, snake_color, server):
+    def __init__(self, screen, client, snake_color):
         self.screen = screen
-        self.highscore = highscore
-        self.level = level
+        self.client = client
         self.snake_color = snake_color
-        self.server = server
-        self.game_over = False
-        self.game = Game(screen, highscore, level, snake_color)
-        self.player_number = None
+        self.clock = pygame.time.Clock()
 
     def run(self):
-        # Get the player number from the server
-        self.player_number = self.server.receive_player_number()
+        self.running = True
+        self.game_over = False
 
-        while not self.game_over:
-            # Handle events and player input
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.game_over = True
-                elif event.type == pygame.KEYDOWN:
-                    player_input = self.get_player_input(event)
-                    self.send_player_input(player_input)
+        while self.running and not self.game_over:
+            self.client.request_game_state()
+            game_state = self.client.game_state
+            if not self.client.handle_input():
+                show_end_screen(self.screen, "Game Over, press any key")
+                pygame.time.delay(config.GAME_OVER_DELAY)
+                self.running = False
+                break
+                
+            
 
-            # Receive game state updates from the server
-            game_state = self.server.receive_game_state()
-            self.update_game_state(game_state)
+            if game_state is not None:
+                if game_state ==  {'end_reason': 'server_closed'} or game_state ==  {'end_reason': 'game_over'}:
+                    show_end_screen(self.screen, "Game Over")
+                    pygame.time.delay(config.GAME_OVER_DELAY)
+                    self.running = False
+                    break
+                terrains_data = game_state['terrains']
+                snakes_data = game_state['snakes']
+                foods_data = game_state['foods']
+                bonuses_data = game_state['bonuses']
+                points_to_complete = game_state['points_to_complete']
+                start_time = game_state['start_time']
 
-            # Render the game
-            self.game.render()
+                foods = [Food(food_data['position']) for food_data in foods_data]
+                bonuses = [Bonus(bonus_data['position'], bonus_data['type']) for bonus_data in bonuses_data]
+                terrains = [Terrain(terrain_data['position'], terrains_data['type']) for terrain_data in terrains_data]
+                snakes = {client_id: Snake.from_data(snake_data) for client_id, snake_data in snakes_data.items()} 
 
-            # Check for game over condition
-            if self.game.check_game_over():
-                self.game_over = True
+                draw_game_multiplayer(self.screen, terrains, snakes, foods, bonuses, points_to_complete, start_time, self.client.player_id)
+            self.clock.tick(config.CLOCK_TICK)
+            pygame.display.flip()
 
-        # Display game over message and high score
-        self.game.display_game_over_message()
-        self.game.display_high_score()
-
-    def get_player_input(self, event):
-        pass
-
-    def send_player_input(self, player_input):
-        pass
-
-    def update_game_state(self, game_state):
-        pass

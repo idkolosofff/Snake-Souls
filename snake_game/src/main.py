@@ -41,15 +41,24 @@ def main():
             multiplayer_action = multiplayer_menu.run()
             if multiplayer_action == 'Host':
                 server = Server()
-                server.start()
-                game_multiplayer = GameMultiplayer(screen, highscore, level, snake_color, server)
+                server_thread = threading.Thread(target=server.run)
+                server_thread.start()
+
+                client = Client('localhost', snake_color) # Assuming server and client are on the same machine
+                game_multiplayer = GameMultiplayer(screen, client, snake_color)
                 game_multiplayer.run()
-                server.stop()
+                
+                server.shutdown()
+                server_thread.join()
             elif multiplayer_action == 'Join':
-                server_ip = input("Enter server IP address: ")
-                client = Client(server_ip)
-                game_multiplayer = GameMultiplayer(screen, highscore, level, snake_color, client)
-                game_multiplayer.run()
+                ip = input("Enter the server IP address: ")
+                try:
+                    client = Client(ip, snake_color)
+                    game_multiplayer = GameMultiplayer(screen, client, snake_color)
+                    game_multiplayer.run()
+                except socket.gaierror:
+                    print("Failed to connect to the server. Please check the IP address and try again.")
+                    continue
             elif multiplayer_action == 'Back':
                 continue
         elif action == 'Colors':

@@ -39,7 +39,7 @@ class Menu:
 
 class MultiplayerMenu(Menu):
     def draw(self):
-        draw_menu(self.screen, config.MULTIPLAYER_OPTIONS, config.TITLE_FONT, config.MENU_FONT, config.MENU_FONT)
+        draw_menu(self.screen, config.MULTIPLAYER_OPTIONS, self.title_font, self.caption_font, self.font)
 
     def handle_input(self):
         for event in pygame.event.get():

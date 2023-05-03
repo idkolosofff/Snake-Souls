@@ -1,41 +1,44 @@
+import pygame
 import socket
-import threading
 from . import config
-from .game import Game
+from .network import Network
 
 class Client:
-    def __init__(self, server_ip, server_port):
-        self.server_ip = server_ip
-        self.server_port = server_port
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.game = None
-        self.running = False
+    def __init__(self, ip, snake_color):
+        self.network = Network(ip)
+        self.player_id = self.network.get_player_id()
+        self.game_state = None
 
-    def connect(self):
-        self.socket.connect((self.server_ip, self.server_port))
-        self.running = True
-        thread = threading.Thread(target=self.receive_messages)
-        thread.start()
+    def update_direction(self, new_direction):
+        self.network.send_data(('update_direction', self.player_id, new_direction))
 
     def disconnect(self):
-        self.running = False
-        self.socket.close()
+        self.network.send_data(('disconnecting', self.player_id))
 
-    def send_message(self, message_type, message_data):
-        pass
+    def request_game_state(self):
+        try:
+            self.game_state = self.network.get_game_state()
+        except (socket.error, EOFError):
+            self.game_state = {'end_reason': 'server_closed'}
 
-    def receive_messages(self):
-        while self.running:
-            data = self.socket.recv(config.BUFFER_SIZE)
-            if data:
-                # Handle the message based on its type
-                message_type, message_data = self.decode_message(data)
-                if message_type == 'game_state':
-                    # Update the game state with the new game state
-                    self.game.update_game_state(message_data)
-
-    def encode_message(self, message_type, message_data):
-        pass
-
-    def decode_message(self, message_data):
-        pass
+    def handle_input(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.disconnect()
+                return False
+            elif event.type == pygame.KEYDOWN:
+                if not (self.player_id in self.game_state['snakes']):
+                    return False
+                snake_direction = self.game_state['snakes'][self.player_id]['direction']
+                if event.key == pygame.K_UP and snake_direction != config.UP:
+                    self.update_direction(config.DOWN)
+                elif event.key == pygame.K_DOWN and snake_direction != config.DOWN:
+                    self.update_direction(config.UP)
+                elif event.key == pygame.K_LEFT and snake_direction != config.LEFT:
+                    self.update_direction(config.RIGHT)
+                elif event.key == pygame.K_RIGHT and snake_direction != config.RIGHT:
+                    self.update_direction(config.LEFT)
+                elif event.key == pygame.K_ESCAPE:
+                    self.disconnect()
+                    return False
+        return True

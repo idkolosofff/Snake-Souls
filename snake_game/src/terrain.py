@@ -10,3 +10,9 @@ class Terrain:
 
     def draw(self, screen):
         draw_terrain(screen, self.position, self.size, self.type)
+
+    def get_terrain_data(self):
+        return {
+            'type' : self.type,
+            'position': self.position,
+        }
