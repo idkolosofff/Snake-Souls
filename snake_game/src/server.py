@@ -15,7 +15,7 @@ from .drawing import draw_game
 from . import config
 
 class Server:
-    def __init__(self, ip='localhost', port=5555):
+    def __init__(self, ip='0.0.0.0', port=5555):
         self.clients = {}
         self.client_id_counter = 0
         self.running = True
@@ -58,6 +58,7 @@ class Server:
     def send_data(self, connection, data):
         message = pickle.dumps(data)
         message_length = len(message)
+        #print(f"Sending data: {data}")
         connection.send(message_length.to_bytes(4, 'big'))
         connection.send(message)
 
@@ -73,6 +74,7 @@ class Server:
     def recv_data(self, connection):
         message_length = int.from_bytes(self.recvall(connection, 4), 'big')
         data = self.recvall(connection, message_length)
+        #print(f"Received data: {pickle.loads(data)}")
         return pickle.loads(data)
 
     def add_client(self, connection, address):
@@ -103,6 +105,8 @@ class Server:
     def remove_client(self, client_id):
         print(f"removing {client_id} client ...")
         if client_id in self.clients:
+            connection = self.clients[client_id]['connection']
+            connection.close()
             del self.clients[client_id]
         if client_id in self.clients_to_remove:
             del self.clients_to_remove[client_id]

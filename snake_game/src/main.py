@@ -3,6 +3,8 @@ import sys
 import socket
 import threading
 import pygame
+import requests
+import time
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.game import Game
 from src.game_multiplayer import GameMultiplayer
@@ -40,9 +42,13 @@ def main():
             multiplayer_menu = MultiplayerMenu(screen)
             multiplayer_action = multiplayer_menu.run()
             if multiplayer_action == 'Host':
+                public_ip = get_public_ip()
+                if public_ip is None:
+                    public_ip = input("Enter your public IP address: ")
                 server = Server()
                 server_thread = threading.Thread(target=server.run)
                 server_thread.start()
+                time.sleep(1)
 
                 client = Client('localhost', snake_color) # Assuming server and client are on the same machine
                 game_multiplayer = GameMultiplayer(screen, client, snake_color)
@@ -82,3 +88,12 @@ if __name__ == "__main__":
     main()
 
 
+def get_public_ip():
+    try:
+        response = requests.get('https://api.ipify.org?format=json')
+        ip = response.json()['ip']
+        return ip
+    except:
+        print("Error fetching public IP address. Please enter it manually.")
+        return None
+    
