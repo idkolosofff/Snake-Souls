@@ -73,5 +73,5 @@ class GameMultiplayer:
     def update_game_state_loop(self):
         while self.updating_game_state:
             self.client.request_game_state()
-            time.sleep(0.01)  # Update game state every 50 ms
+            time.sleep(0.005)  # Update game state every 5 ms
 

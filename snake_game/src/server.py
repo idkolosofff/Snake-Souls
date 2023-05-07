@@ -15,7 +15,7 @@ from .drawing import draw_game
 from . import config
 
 class Server:
-    def __init__(self, ip='0.0.0.0', port=5555):
+    def __init__(self, ip='0.0.0.0', port=5432):
         self.clients = {}
         self.client_id_counter = 0
         self.running = True
@@ -72,10 +72,13 @@ class Server:
         return data
 
     def recv_data(self, connection):
-        message_length = int.from_bytes(self.recvall(connection, 4), 'big')
-        data = self.recvall(connection, message_length)
-        #print(f"Received data: {pickle.loads(data)}")
-        return pickle.loads(data)
+        try:
+            message_length = int.from_bytes(self.recvall(connection, 4), 'big')
+            data = self.recvall(connection, message_length)
+            return pickle.loads(data)
+        except (pickle.UnpicklingError, ValueError, EOFError, socket.error) as e:
+            print(f"Error receiving data: {e}")
+            return None
 
     def add_client(self, connection, address):
         client_id = self.client_id_counter
@@ -132,6 +135,8 @@ class Server:
         while self.running and not client_data['snake'].lost:
             try:
                 message = self.recv_data(connection)
+                if message is None:
+                    break
                 if message[0] == 'update_direction':
                     new_direction = message[2]
                     client_data['snake'].direction = new_direction
@@ -375,6 +380,9 @@ class Server:
             for client_id, client_lost in collisions.items():
                 print (f"Player {client_id} is smashed")
                 self.clients[client_id]['snake'].lost = client_lost
+            if 0 in self.clients and self.clients[0]['snake'].lost == True:
+                print("host lost")
+                self.running = False
         
 
     def run(self):

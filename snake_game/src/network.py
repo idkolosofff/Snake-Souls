@@ -6,9 +6,10 @@ class Network:
     def __init__(self, ip):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = ip
-        self.port = 5555  # Choose an appropriate port number
+        self.port = 5432  # Choose an appropriate port number
         self.addr = (self.server, self.port)
         self.client.connect(self.addr)
+        self.connected = True
 
     def get_player_id(self):
         player_id = self.recv_data()
@@ -20,14 +21,17 @@ class Network:
             return self.recv_data()
         except socket.error as e:
             print('Connection lost')
+            self.connected = False
             return {'end_reason': 'server_closed'}
 
 
     def send_data(self, data):
+        if not self.connected:
+            return
         try:
             message = pickle.dumps(data)
             message_length = len(message)
-            #print(f"Sending data: {data}")
+            print(f"Sending data: {data}")
             self.client.send(message_length.to_bytes(4, 'big'))
             self.client.send(message)
         except socket.error as e:
@@ -43,8 +47,12 @@ class Network:
         return data
 
     def recv_data(self):
-        message_length = int.from_bytes(self.recvall(4), 'big')
-        data = self.recvall(message_length)
-        #print(f"Received data: {pickle.loads(data)}")
-        return pickle.loads(data)
+        try:
+            message_length = int.from_bytes(self.recvall(4), 'big')
+            data = self.recvall(message_length)
+            #print(f"Received data: {pickle.loads(data)}")
+            return pickle.loads(data)
+        except (pickle.UnpicklingError, ValueError, EOFError, socket.error) as e:
+            print(f"Error network receiving data: {e}")
+            return None
 

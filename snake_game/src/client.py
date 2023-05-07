@@ -14,6 +14,8 @@ class Client:
 
     def disconnect(self):
         self.network.send_data(('disconnecting', self.player_id))
+        print('Connection lost')
+        self.network.connected = False
 
     def request_game_state(self):
         try:

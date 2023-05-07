@@ -45,12 +45,12 @@ def main():
                 public_ip = get_public_ip()
                 if public_ip is None:
                     public_ip = input("Enter your public IP address: ")
-                server = Server()
+                server = Server(config.LOCAL_IP) #for local network
                 server_thread = threading.Thread(target=server.run)
                 server_thread.start()
-                time.sleep(1)
+                time.sleep(0.5)
 
-                client = Client('localhost', snake_color) # Assuming server and client are on the same machine
+                client = Client(config.LOCAL_IP, snake_color) # Assuming server and client are on the same machine
                 game_multiplayer = GameMultiplayer(screen, client, snake_color)
                 game_multiplayer.run()
                 
