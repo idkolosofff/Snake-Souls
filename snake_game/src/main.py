@@ -3,7 +3,6 @@ import sys
 import socket
 import threading
 import pygame
-import requests
 import time
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.game import Game
@@ -42,15 +41,13 @@ def main():
             multiplayer_menu = MultiplayerMenu(screen)
             multiplayer_action = multiplayer_menu.run()
             if multiplayer_action == 'Host':
-                public_ip = get_public_ip()
-                if public_ip is None:
-                    public_ip = input("Enter your public IP address: ")
-                server = Server(config.LOCAL_IP) #for local network
+                ip = input("Enter the server IP address: ")
+                server = Server(ip) #for local network
                 server_thread = threading.Thread(target=server.run)
                 server_thread.start()
                 time.sleep(0.5)
 
-                client = Client(config.LOCAL_IP, snake_color) # Assuming server and client are on the same machine
+                client = Client(ip, snake_color) # Assuming server and client are on the same machine
                 game_multiplayer = GameMultiplayer(screen, client, snake_color)
                 game_multiplayer.run()
                 

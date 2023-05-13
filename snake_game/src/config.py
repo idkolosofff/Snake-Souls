@@ -1,7 +1,7 @@
 #MAIN
 SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 800
-LOCAL_IP = '192.168.0.113'
+LOCAL_IP = '127.0.0.1'
 
 #MENU
 MENU_OPTIONS = [("1", "Start New Game"), ("2", "Multiplayer"), ("3", "Show Personal Records"), ("4", "Colors"), ("5", "Quit")]

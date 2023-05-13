@@ -31,7 +31,7 @@ class Network:
         try:
             message = pickle.dumps(data)
             message_length = len(message)
-            print(f"Sending data: {data}")
+            #print(f"Sending data: {data}")
             self.client.send(message_length.to_bytes(4, 'big'))
             self.client.send(message)
         except socket.error as e:

@@ -108,7 +108,7 @@ def draw_game_multiplayer(screen, terrains, snakes, foods, bonuses, points_to_co
     for player_id, player in snakes.items():
         points_text = font.render(f"ID {player_id}: {int(player.points)}/{points_to_complete}", True, player.color)
         # Position the text elements on the panel
-        screen.blit(points_text, (config.POINTS_POS + player_id * 50, panel_y + panel_height // 2 + points_text.get_height() // 2))
+        screen.blit(points_text, (config.POINTS_POS + player_id * 100, panel_y + panel_height // 2 + points_text.get_height() // 2))
 
 def show_end_screen(screen, message):
     font = pygame.font.Font(None, config.MENU_FONT)

@@ -15,7 +15,7 @@ from .drawing import draw_game
 from . import config
 
 class Server:
-    def __init__(self, ip='0.0.0.0', port=5432):
+    def __init__(self, ip=config.LOCAL_IP, port=5432):
         self.clients = {}
         self.client_id_counter = 0
         self.running = True
