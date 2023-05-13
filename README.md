@@ -21,6 +21,6 @@ During the game, you control the snake with the arrow keys. The goal is to eat a
 When the game ends, you will be shown your final score and given the option to view the high scores or return to the main menu.
 
 
-'[Gameplay_screenshot](snake_game/assets/images/singleplayer.png.png)'
-'[Gameplay_screenshot](snake_game/assets/images/multiplayer_2.png)'
-'[Gameplay_screenshot](snake_game/assets/images/multiplayer_1.png)'
+'![Gameplay_screenshot](snake_game/assets/images/singleplayer.png)'
+'![Gameplay_screenshot](snake_game/assets/images/multiplayer_2.png)'
+'![Gameplay_screenshot](snake_game/assets/images/multiplayer_1.png)'
