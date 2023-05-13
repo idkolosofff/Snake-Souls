@@ -1,4 +1,5 @@
 import pygame
+import sys
 from . import config
 
 def draw_menu(screen, options, title_font, caption_font, font):
@@ -66,6 +67,63 @@ def draw_game(screen, terrains, snake, foods, bonuses, panel_height, points, poi
     screen.blit(length_text, (config.LENGTH_POS, panel_y + panel_height // 2 - length_text.get_height() // 2))
     screen.blit(speed_text, (config.SPEED_POS, panel_y + panel_height // 2 - speed_text.get_height() // 2))
     screen.blit(time_text, (config.TIME_POS, panel_y + panel_height // 2 - time_text.get_height() // 2))
+
+def draw_game_multiplayer(screen, terrains, snakes, foods, bonuses, points_to_complete, start_time, self_id):
+    screen.fill(config.BLACK)  # Clear screen
+    panel_height = config.PANEL_HEIGHT
+    for terrain in terrains:
+        terrain.draw(screen)
+    for snake in snakes.values():
+        snake.draw(screen)
+    for food in foods:
+        food.draw(screen)
+    for bonus in bonuses:
+        bonus.draw(screen)
+    #draw panel
+    width, height = screen.get_size()
+    panel_y = height - panel_height
+    panel_bg_color = config.GREY
+    border_color = config.WHITE
+    border_thickness = config.PANEL_BORDER_THICKNESS
+    # Draw the panel background
+    pygame.draw.rect(screen, panel_bg_color, (0, panel_y, width, panel_height))
+    pygame.draw.line(screen, border_color, (0, panel_y), (width, panel_y), border_thickness)
+    # Set the font and color for the text
+    font = pygame.font.Font(None, config.PANEL_FONT)
+    text_color = config.WHITE
+    # Display the current points, length, speed, and time passed
+    time_passed = (pygame.time.get_ticks() - start_time) // 1000
+    time_text = font.render(f"Time: {time_passed}s", True, text_color)
+    if self_id in snakes:
+        snake = snakes[self_id]
+        points = snake.points
+        points_text = font.render(f"Points: {int(points)}/{points_to_complete}", True, text_color)
+        length_text = font.render(f"Length: {len(snake.body) // config.SNAKE_GROWTH_RATE}", True, text_color)
+        speed_text = font.render(f"Speed: {snake.speed:.2f}", True, text_color)
+
+        screen.blit(points_text, (config.POINTS_POS, panel_y + panel_height // 2 - points_text.get_height() // 2))
+        screen.blit(length_text, (config.LENGTH_POS, panel_y + panel_height // 2 - length_text.get_height() // 2))
+        screen.blit(speed_text, (config.SPEED_POS, panel_y + panel_height // 2 - speed_text.get_height() // 2))
+    screen.blit(time_text, (config.TIME_POS, panel_y + panel_height // 2 - time_text.get_height() // 2))
+    for player_id, player in snakes.items():
+        points_text = font.render(f"ID {player_id}: {int(player.points)}/{points_to_complete}", True, player.color)
+        # Position the text elements on the panel
+        screen.blit(points_text, (config.POINTS_POS + player_id * 100, panel_y + panel_height // 2 + points_text.get_height() // 2))
+
+def show_end_screen(screen, message):
+    font = pygame.font.Font(None, config.MENU_FONT)
+    text = font.render(message, True, config.WHITE)
+    text_rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
+    screen.blit(text, text_rect)
+    pygame.display.flip()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                return
 
 def draw_highscore(screen, scores, font):
     screen.fill(config.BLACK)

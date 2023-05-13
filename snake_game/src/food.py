@@ -10,3 +10,7 @@ class Food:
 
     def draw(self, screen):
         draw_food(screen, self.position, self.size)
+    def get_food_data(self):
+        return {
+            'position': self.position,
+        }

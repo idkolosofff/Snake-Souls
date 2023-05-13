@@ -10,6 +10,8 @@ class Snake:
         self.body = [start_pos]
         self.direction = config.LEFT
         self.speed = start_speed
+        self.points = 0
+        self.lost = False
         self.growth = 0             #How many tail blocks to grow
 
     def change_direction(self, new_direction):
@@ -50,4 +52,23 @@ class Snake:
         self.body = [start_pos]
         self.direction = config.LEFT
         self.growth = 0
+
+    def get_snake_data(self):
+        return {
+            'color': self.color,
+            'body': self.body,
+            'direction': self.direction,
+            'speed': self.speed,
+            'points': self.points,
+            'lost': self.lost,
+        }
+    
+    @classmethod
+    def from_data(cls, data):
+        snake = cls(color=data['color'], block_size=config.SNAKE_SIZE, start_speed=data['speed'])
+        snake.body = data['body']
+        snake.direction = data['direction']
+        snake.points = data['points']
+        snake.lost = data['lost']
+        return snake
 
